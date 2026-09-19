@@ -14,7 +14,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Check Python syntax
-        run: python -m compileall -q backend/app
+        run: python -m compileall -q backend
 
   frontend:
     runs-on: ubuntu-latest
@@ -38,6 +38,9 @@ jobs:
       - run: cp .env.example .env
       - run: docker compose up -d --build api
       - run: docker compose exec -T api alembic upgrade head
+      - run: docker compose exec -T api python -m scripts.seed_postgres
+      - run: docker compose exec -T api python -m scripts.verify_postgres
+      - run: docker compose exec -T api python -m unittest discover -s tests -p "test_*.py"
       - run: docker compose exec -T api python -m scripts.smoke_orders
       - if: always()
         run: docker compose down -v
