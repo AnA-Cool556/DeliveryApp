@@ -38,4 +38,4 @@ docker compose exec api python -m scripts.smoke_orders
 
 The script creates temporary users, a restaurant, inventory, and products; tests order creation, replay, stock conflicts, concurrent requests, cancellation, and access control; then removes its data. Seed and verification scripts for the CP1 dataset are still pending.
 
-Read the [decisions](docs/decisions.md), [data model](docs/data-model.md), [API contract](docs/api-contract.md), and [backlog](docs/backlog.md) before feature work. The team should replace roles A–D with real names and confirm the open questions with the instructor.
+Read the [decisions](docs/decisions.md), [data model](docs/data-model.md), [API contract](docs/api-contract.md), and [backlog](docs/backlog.md) before feature work. Give teammates their individual briefs from the [CP1 team handoff](docs/team-handoff.md), replace role labels with real names, and confirm open questions with the instructor.

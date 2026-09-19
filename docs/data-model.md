@@ -13,7 +13,7 @@ erDiagram
     users ||--o{ deliveries : rides
 ```
 
-MongoDB `products.id` must match PostgreSQL `inventory.product_id`. A product can be ordered only when a valid inventory row exists. Creating a product across both databases requires reconciliation for partial writes and a retry path.
+MongoDB `products._id` must match PostgreSQL `inventory.product_id`. A product can be ordered only when a valid inventory row exists. Creating a product across both databases requires reconciliation for partial writes and a retry path.
 
 The future DDL should include primary keys, foreign keys, unique constraints, check constraints, and indexes for actual queries. MongoDB needs indexes for restaurant catalog queries and current rider locations. Seed scripts must be idempotent and provide at least 1,000 records or documents per database for CP1.
 
