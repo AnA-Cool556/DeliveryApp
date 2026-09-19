@@ -1,6 +1,6 @@
 # Initial data model
 
-PostgreSQL will hold `users`, `restaurants`, `inventory`, `orders`, `order_items`, `deliveries`, and `order_status_history`. MongoDB will hold `products`, `rider_locations`, and `location_events`. No schemas or indexes are implemented yet.
+Migration `0001_order_baseline` creates PostgreSQL `users`, `restaurants`, `inventory`, `orders`, `order_items`, `deliveries`, and `order_status_history`. MongoDB `products`, `rider_locations`, and `location_events` are still owned by catalog and tracking work. Additional columns and indexes must go into new migrations once teammates have applied the baseline.
 
 ```mermaid
 erDiagram

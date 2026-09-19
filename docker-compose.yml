@@ -35,6 +35,8 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       MONGO_URL: mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongo:27017/?authSource=admin
+      DELIVERY_FEE_SATANG: ${DELIVERY_FEE_SATANG:-1500}
+      AUTH_SECRET: ${AUTH_SECRET:?Set AUTH_SECRET in .env}
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:
