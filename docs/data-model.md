@@ -1,0 +1,20 @@
+# Initial data model
+
+PostgreSQL will hold `users`, `restaurants`, `inventory`, `orders`, `order_items`, `deliveries`, and `order_status_history`. MongoDB will hold `products`, `rider_locations`, and `location_events`. No schemas or indexes are implemented yet.
+
+```mermaid
+erDiagram
+    users ||--o{ orders : places
+    restaurants ||--o{ inventory : stocks
+    restaurants ||--o{ orders : receives
+    orders ||--|{ order_items : contains
+    orders ||--o| deliveries : has
+    orders ||--o{ order_status_history : records
+    users ||--o{ deliveries : rides
+```
+
+MongoDB `products.id` must match PostgreSQL `inventory.product_id`. A product can be ordered only when a valid inventory row exists. Creating a product across both databases requires reconciliation for partial writes and a retry path.
+
+The future DDL should include primary keys, foreign keys, unique constraints, check constraints, and indexes for actual queries. MongoDB needs indexes for restaurant catalog queries and current rider locations. Seed scripts must be idempotent and provide at least 1,000 records or documents per database for CP1.
+
+Migrations should be the only executable path for schema changes. A DDL baseline is documentation and must not create the same tables a second time.
