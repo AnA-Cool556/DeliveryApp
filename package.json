@@ -1,0 +1,25 @@
+{
+  "name": "deliveryapp",
+  "version": "1.0.0",
+  "description": "Food delivery around Chiang Mai University. The setup and Orders API are implemented. Users, Products, and Tracking APIs are still pending.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AnA-Cool556/DeliveryApp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AnA-Cool556/DeliveryApp/issues"
+  },
+  "homepage": "https://github.com/AnA-Cool556/DeliveryApp#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^26.6.2"
+  }
+}
