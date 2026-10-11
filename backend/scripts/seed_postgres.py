@@ -41,11 +41,11 @@ def seed_postgres() -> None:
                 restaurant_records,
             )
 
-            # 2. Seed Users (80 customers, 20 riders, one demo merchant)
+            # 2. Seed Users (1,480 customers, 20 riders, one demo merchant)
             user_records = []
-            for i in range(100):
+            for i in range(1500):
                 uid = user_id(i)
-                if i < 80:
+                if i < 1480:
                     role = "customer"
                     email = f"customer_{i}@cmu.ac.th"
                     name = f"Customer {i}"
@@ -56,7 +56,7 @@ def seed_postgres() -> None:
                 user_records.append((uid, email, name, default_password_hash, role))
 
             user_records.append(
-                (user_id(100), "merchant@cmu.example", "CMU Demo Merchant", default_password_hash, "merchant")
+                (user_id(1500), "merchant@cmu.example", "CMU Demo Merchant", default_password_hash, "merchant")
             )
 
             cur.executemany(

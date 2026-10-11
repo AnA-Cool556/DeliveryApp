@@ -85,4 +85,54 @@ The CP1 smoke test exercises all five required routes through HTTP and cleans up
 
 To verify Checkpoint 1, use the [testing guide](docs/cp1-testing.md). The [submission guide](docs/cp1-submission.md) maps each requirement to repository evidence and explains the assignment upload. See [the data model](docs/data-model.md), [decisions](docs/decisions.md), and [backlog](docs/backlog.md) for design notes.
 
-For the course assignment upload, one team member runs `python tools/package_cp1.py` and uploads `dist/DeliveryApp_CP1_submission.zip`. The alternative is a public Google Drive/OneDrive link, but the ZIP upload avoids changing cloud-sharing permissions. See the submission guide for the exact handoff.
+## Checkpoint 2: Zero-Downtime Migration (Expand-Contract)
+
+CP2 migrates `users.name` into `first_name` and `last_name` without application downtime, 5xx errors, or data loss while background traffic ($\ge 20$ req/s) is continuously executing.
+
+```mermaid
+flowchart LR
+    P1["1. Expand<br/>(first_name, last_name NULL)"] --> P2["2. Dual-Write<br/>(Write name + first/last)"]
+    P2 --> P3["3. Backfill<br/>(Keyset pagination 500/batch)"]
+    P3 --> P4["4. Switch-Read<br/>(Read first/last, synthesize name)"]
+    P4 --> P5["5. Contract<br/>(Drop name, NOT NULL first_name)"]
+```
+
+### Zero-Downtime Migration Rehearsal & Verification
+
+Run the automated 5-phase rehearsal demo while the traffic generator sends concurrent requests:
+
+```bash
+docker compose exec -T api python -m scripts.demo_cp2
+```
+
+Or execute individual phases step-by-step:
+
+```bash
+# Start background traffic generator (runs for 60s at 25 req/s)
+docker compose exec -T api python -m scripts.traffic_gen --duration 60 --rate 25 &
+
+# 1. Expand phase
+docker compose exec -T api alembic upgrade head
+docker compose exec -T api python -m scripts.set_migration_phase expand
+
+# 2. Dual-write phase
+docker compose exec -T api python -m scripts.set_migration_phase dual_write
+
+# 3. Backfill phase with keyset pagination
+docker compose exec -T api python -m scripts.set_migration_phase backfill
+docker compose exec -T api python -m scripts.backfill_user_names
+docker compose exec -T api python -m scripts.verify_backfill
+
+# 4. Switch-read phase
+docker compose exec -T api python -m scripts.set_migration_phase switch_read
+
+# 5. Contract phase
+docker compose exec -T api python -m scripts.run_contract
+docker compose exec -T api python -m scripts.verify_backfill
+```
+
+### Assignment Submissions
+
+- **CP1 Submission**: `python tools/package_cp1.py` -> `dist/DeliveryApp_CP1_submission.zip`
+- **CP2 Submission**: `python tools/package_cp2.py` -> `dist/DeliveryApp_CP2_submission.zip`
+

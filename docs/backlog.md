@@ -14,7 +14,9 @@ Use `Todo → Doing → Review → Done`. Keep one main item in Doing per person
 | CI-01 | Clean Compose integration checks | Jirasak | Done; seed, verification, unit tests, and smoke tests |
 | DOC-01 | README, API contract, model, audit instructions | Jirasak + Anakin arsa | Done |
 | TRACK-01 | Rider location write/read API and map | Unassigned | Later milestone; CP1 only needs the location collection and seed |
-| CP2-01 | Expand/dual-write/backfill/switch/contract migration demo | Unassigned | Checkpoint 2 |
+| CP2-01A | Zero-downtime architecture, 0003 migration, connection pool, packager | Jirasak | Done; Expand schema, migration_state table, psycopg-pool, package_cp2.py |
+| CP2-01B | Dual-write API, Postgres trigger, keyset backfill script | Supanat Pudhom | Done; 500-row keyset backfill, checkpoint tracking, dual-write fallback |
+| CP2-01C | Switch-read API, contract script, traffic generator, rehearsal demo | Anakin arsa | Done; asyncio+httpx traffic gen (>=20 req/s), demo_cp2.py, 0 5xx, p99 < 500ms |
 | CP3-01 | Concurrency and performance audit | Unassigned | Checkpoint 3 |
 
 Before the CP1 instructor audit, each member should be able to explain their own commits, the PostgreSQL/MongoDB responsibility split, how seed IDs join across databases, and the limits of cross-database writes.
