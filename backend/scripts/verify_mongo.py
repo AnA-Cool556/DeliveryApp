@@ -66,7 +66,7 @@ def verify_mongo() -> bool:
                 or not getattr(document.get("updated_at"), "tzinfo", None)
             ):
                 errors.append(f"Invalid rider location: {document.get('_id')}")
-        for index in range(80, 100):
+        for index in range(1480, 1500):
             if user_id(index) not in location_ids:
                 errors.append(f"Missing seeded rider location {index}")
 

@@ -18,9 +18,9 @@ def user_id(index: int) -> str:
 | Data | Owner | IDs / relation | Minimum count |
 | --- | --- | --- | --- |
 | `restaurants` in PostgreSQL | Users owner | `restaurant_id(0..9)` | 10 |
-| `users` in PostgreSQL | Users owner | `user_id(0..100)`; 0–79 customers, 80–99 riders, 100 demo merchant | 101 |
+| `users` in PostgreSQL | Users owner | `user_id(0..1500)`; 0–1479 customers, 1480–1499 riders, 1500 demo merchant | 1,501 |
 | `inventory` in PostgreSQL | Users owner | `product_id(0..999)`, restaurant `restaurant_id(index // 100)`, positive quantity | 1,000 |
 | `products` in MongoDB | Catalog owner | `_id = product_id(0..999)`, restaurant `restaurant_id(index // 100)`, nonempty name, integer `price_satang`, `active: true` | 1,000 |
-| `rider_locations` in MongoDB | Catalog owner | `rider_id = user_id(80..99)`, UTC `updated_at`, valid CMU-area coordinates | 20 |
+| `rider_locations` in MongoDB | Catalog owner | `rider_id = user_id(1480..1499)`, UTC `updated_at`, valid CMU-area coordinates | 20 |
 
 The scripts use insert-if-missing operations on reruns. They do not reset stock after orders have been placed, replace password hashes, or overwrite menu changes. The verifier checks per-database counts and one-to-one seeded product/inventory IDs. The disposable records in `scripts.smoke_cp1` and `scripts.smoke_orders` are integration tests, not CP1 seed data.

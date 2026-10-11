@@ -20,7 +20,7 @@ docker compose exec -T api python -m scripts.seed
 docker compose exec -T api python -m scripts.verify_seed
 ```
 
-Expect 10 restaurants, 101 users, and 1,000 inventory rows in PostgreSQL. Expect the `products` and `rider_locations` MongoDB collections with 1,000 products and 20 rider locations. The verifier also checks indexes, required fields, product-to-inventory links, nonnegative stock, and no orphaned inventory.
+Expect 10 restaurants, 1,501 users, and 1,000 inventory rows in PostgreSQL. Expect the `products` and `rider_locations` MongoDB collections with 1,000 products and 20 rider locations. The verifier also checks indexes, required fields, product-to-inventory links, nonnegative stock, and no orphaned inventory.
 
 ## Test the API and order behavior
 

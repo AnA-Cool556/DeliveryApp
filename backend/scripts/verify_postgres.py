@@ -21,15 +21,15 @@ def verify_postgres() -> bool:
             cur.execute("SELECT count(*) FROM users")
             user_count = cur.fetchone()[0]
             print(f"[CHECK] Total users count: {user_count}")
-            if user_count < 100:
-                errors.append(f"Expected at least 100 users, found {user_count}")
+            if user_count < 1501:
+                errors.append(f"Expected at least 1,501 users, found {user_count}")
 
             # 2b. Role counts
             cur.execute("SELECT count(*) FROM users WHERE role = 'customer'")
             customer_count = cur.fetchone()[0]
             print(f"[CHECK] Customer users count: {customer_count}")
-            if customer_count < 80:
-                errors.append(f"Expected at least 80 customers, found {customer_count}")
+            if customer_count < 1480:
+                errors.append(f"Expected at least 1,480 customers, found {customer_count}")
 
             cur.execute("SELECT count(*) FROM users WHERE role = 'rider'")
             rider_count = cur.fetchone()[0]

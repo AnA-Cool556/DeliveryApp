@@ -59,14 +59,63 @@ def seed_postgres() -> None:
                 (user_id(1500), "merchant@cmu.example", "CMU Demo Merchant", default_password_hash, "merchant")
             )
 
-            cur.executemany(
+            cur.execute(
                 """
-                INSERT INTO users (id, email, name, password_hash, role)
-                VALUES (%s, %s, %s, %s, %s)
-                ON CONFLICT (id) DO NOTHING
-                """,
-                user_records,
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_name = 'users'
+                """
             )
+            columns = {row[0] for row in cur.fetchall()}
+
+            if "name" in columns and "first_name" in columns:
+                cur.executemany(
+                    """
+                    INSERT INTO users (id, email, name, first_name, last_name, password_hash, role)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (id) DO NOTHING
+                    """,
+                    [
+                        (
+                            uid,
+                            email,
+                            name,
+                            name.split(" ", 1)[0],
+                            name.split(" ", 1)[1] if " " in name else "",
+                            pwd,
+                            role,
+                        )
+                        for uid, email, name, pwd, role in user_records
+                    ],
+                )
+            elif "first_name" in columns and "name" not in columns:
+                cur.executemany(
+                    """
+                    INSERT INTO users (id, email, first_name, last_name, password_hash, role)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (id) DO NOTHING
+                    """,
+                    [
+                        (
+                            uid,
+                            email,
+                            name.split(" ", 1)[0],
+                            name.split(" ", 1)[1] if " " in name else "",
+                            pwd,
+                            role,
+                        )
+                        for uid, email, name, pwd, role in user_records
+                    ],
+                )
+            else:
+                cur.executemany(
+                    """
+                    INSERT INTO users (id, email, name, password_hash, role)
+                    VALUES (%s, %s, %s, %s, %s)
+                    ON CONFLICT (id) DO NOTHING
+                    """,
+                    user_records,
+                )
 
             # 3. Seed Inventory (1,000 items: 100 per restaurant)
             inventory_records = []
@@ -87,7 +136,10 @@ def seed_postgres() -> None:
 
         conn.commit()
 
-    print("PostgreSQL seed completed: 10 restaurants, 101 users, 1000 inventory items.")
+    print(
+        f"PostgreSQL seed completed: {len(restaurant_records)} restaurants, "
+        f"{len(user_records)} users, {len(inventory_records)} inventory items."
+    )
 
 
 if __name__ == "__main__":

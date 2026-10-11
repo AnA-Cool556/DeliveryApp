@@ -57,7 +57,7 @@ def seed_mongo() -> None:
 
         locations = []
         for index in range(20):
-            rider = user_id(80 + index)
+            rider = user_id(1480 + index)
             document = {
                 "_id": rider,
                 "rider_id": rider,
