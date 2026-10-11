@@ -5,5 +5,4 @@ from scripts.seed_postgres import seed_postgres
 
 
 if __name__ == "__main__":
-    seed_postgres()
-    seed_mongo()
+    
