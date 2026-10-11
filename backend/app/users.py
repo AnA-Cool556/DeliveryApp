@@ -8,7 +8,7 @@ from uuid import UUID, uuid4
 import psycopg
 from fastapi import APIRouter, Depends, status
 from pydantic import BaseModel, Field, field_validator
-from psycopg.errors import UniqueViolation
+from psycopg.errors import UndefinedColumn, UniqueViolation
 
 from app.db import get_connection
 from app.errors import ApiError
@@ -185,6 +185,14 @@ def register_user(payload: UserRegisterInput) -> dict:
             "EMAIL_ALREADY_EXISTS",
             "A user with this email address already exists",
         ) from error
+    except UndefinedColumn:
+        # run_contract dropped `name` while this process still cached an older phase.
+        # Pin the cache to "contract" and retry once with the new schema.
+        if _phase_cache["phase"] == "contract":
+            raise
+        _phase_cache["phase"] = "contract"
+        _phase_cache["timestamp"] = time.time()
+        return register_user(payload)
 
 
 @auth_router.post("/login", response_model=LoginResponse, status_code=status.HTTP_200_OK)
