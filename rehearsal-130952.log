@@ -1,0 +1,92 @@
+﻿**********************
+Windows PowerShell transcript start
+Start time: 20261011130952
+Username: DESKTOP-T1R3EC3\ADMIN
+RunAs User: DESKTOP-T1R3EC3\ADMIN
+Configuration Name: 
+Machine: DESKTOP-T1R3EC3 (Microsoft Windows NT 10.0.26300.0)
+Host Application: C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe
+Process ID: 7868
+PSVersion: 5.1.26100.9549
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.9549
+BuildVersion: 10.0.26100.9549
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+Transcript started, output file is rehearsal-130952.log
+PS D:\grab\deliveryapp> function Step($cmd) {
+Missing closing '}' in statement block or type definition.
+>> function Step($cmd) {
+    Write-Host "`n>>> $cmd" -ForegroundColor Cyan
+    Invoke-Expression $cmd
+    if ($LASTEXITCODE -ne 0) { throw "FAILED: $cmd" }
+}
+try {
+    Step 'docker compose down -v'
+    Step 'docker compose up -d --build --wait'
+    Step 'docker compose exec -T api python -m scripts.seed'
+    Step 'docker compose exec -T api python -m scripts.verify_seed'
+Missing closing '}' in statement block or type definition.
+>> function Step($cmd) {
+    Write-Host "`n>>> $cmd" -ForegroundColor Cyan
+    Invoke-Expression $cmd
+    if ($LASTEXITCODE -ne 0) { throw "FAILED: $cmd" }
+}
+try {
+    Step 'docker compose down -v'
+    Step 'docker compose up -d --build --wait'
+    Step 'docker compose exec -T api python -m scripts.seed'
+    Step 'docker compose exec -T api python -m scripts.verify_seed'
+    Write-Host "`n>>> NULL-out (จำลองแถวเก่าให้ backfill มีงาน)" -ForegroundColor Cyan
+    @"
+ALTER TABLE users DISABLE TRIGGER trg_users_dual_write;
+UPDATE users SET first_name = NULL, last_name = NULL;
+ALTER TABLE users ENABLE TRIGGER trg_users_dual_write;
+"@ | docker compose exec -T postgres sh -c 'psql -U $POSTGRES_USER -d $POSTGRES_DB'
+    if ($LASTEXITCODE -ne 0) { throw "FAILED: NULL-out" }
+Missing closing '}' in statement block or type definition.
+>> function Step($cmd) {
+    Write-Host "`n>>> $cmd" -ForegroundColor Cyan
+    Invoke-Expression $cmd
+    if ($LASTEXITCODE -ne 0) { throw "FAILED: $cmd" }
+}
+try {
+    Step 'docker compose down -v'
+    Step 'docker compose up -d --build --wait'
+    Step 'docker compose exec -T api python -m scripts.seed'
+    Step 'docker compose exec -T api python -m scripts.verify_seed'
+    Write-Host "`n>>> NULL-out (จำลองแถวเก่าให้ backfill มีงาน)" -ForegroundColor Cyan
+    @"
+ALTER TABLE users DISABLE TRIGGER trg_users_dual_write;
+UPDATE users SET first_name = NULL, last_name = NULL;
+ALTER TABLE users ENABLE TRIGGER trg_users_dual_write;
+"@ | docker compose exec -T postgres sh -c 'psql -U $POSTGRES_USER -d $POSTGRES_DB'
+    if ($LASTEXITCODE -ne 0) { throw "FAILED: NULL-out" }
+    Step 'docker compose exec -T api python -m scripts.demo_cp2'
+}
+finally { Stop-Transcript }
+
+>>> docker compose down -v
+ ✔ Volume deliveryapp_postgres_data Removed                                                                         0.1s
+
+>>> docker compose up -d --build --wait
+
+
+>>> docker compose exec -T api python -m scripts.seed
+
+
+>>> docker compose exec -T api python -m scripts.verify_seed
+
+
+>>> NULL-out (จำลองแถวเก่าให้ backfill มีงาน)
+
+
+>>> docker compose exec -T api python -m scripts.demo_cp2
+
+**********************
+Windows PowerShell transcript end
+End time: 20261011131100
+**********************
