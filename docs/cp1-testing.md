@@ -56,3 +56,4 @@ git status --short --branch
 The ZIP check should print `ZIP OK` and the Git working tree should have no uncommitted source changes. The package file is intentionally ignored by Git. Verify the latest `main` workflow at https://github.com/MawinSkalet/DeliveryApp/actions: the backend, frontend, and orders-integration jobs should pass. Git history is available at https://github.com/MawinSkalet/DeliveryApp/commits/main.
 
 When finished, `docker compose down` stops the containers but preserves the seeded database volumes. Do not use `docker compose down -v` unless you intentionally want to erase the local database data.
+
