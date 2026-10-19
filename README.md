@@ -150,22 +150,26 @@ With the Compose services running and migrations applied, run the dedicated 20-r
 docker compose exec -T api python -m scripts.test_concurrency
 ```
 
-It creates disposable test records, sends 20 simultaneous orders for one unit, and expects exactly one `201` and 19 `409` responses. It removes its records afterward.
+It creates disposable test records, sends 20 simultaneous orders for one unit, and expects exactly one `201` and 19 `409` responses. It removes its records afterward. GitHub Actions runs this test against the Compose integration stack as well as the two-request race in `scripts.smoke_orders`.
 
 ### Automated load test
 
-Prepare an active customer bearer token and an order ID owned by that customer, then run from the repository root. This PowerShell command runs k6 in Docker Desktop without installing it on the host:
+Prepare an active customer bearer token, a restaurant ID, and 50 distinct active product IDs from that restaurant with available stock. Each VU uses a different inventory row. Every k6 iteration creates a fresh order using a unique idempotency key, then cancels that order once; it does not reuse an order ID. Generate a new run ID for every benchmark so idempotency keys cannot replay orders from an earlier test. Run from the repository root. This PowerShell command runs k6 in Docker Desktop without installing it on the host:
 
 ```powershell
 $env:API_TOKEN = "<customer bearer token>"
-$env:ORDER_ID = "<owned order UUID>"
+$env:RESTAURANT_ID = "<restaurant UUID>"
+$env:PRODUCT_IDS = "<50 comma-separated active product UUIDs>"
+$env:RUN_ID = [guid]::NewGuid().ToString("N")
 docker run --rm --add-host=host.docker.internal:host-gateway `
   -e "API_URL=http://host.docker.internal:8000/api/v1/orders" `
   -e "API_TOKEN=$env:API_TOKEN" `
-  -e "ORDER_ID=$env:ORDER_ID" `
+  -e "RESTAURANT_ID=$env:RESTAURANT_ID" `
+  -e "PRODUCT_IDS=$env:PRODUCT_IDS" `
+  -e "RUN_ID=$env:RUN_ID" `
   -v "${PWD}:/work" -w /work grafana/k6:latest run ./k6_script.js
 ```
 
-The script runs 50 virtual users for three minutes, with four order-list reads per cancellation request. k6 enforces p95 < 200 ms, p99 < 500 ms, and HTTP errors < 1%. Each run generates `cp3-k6-report.md` with throughput, latency/error metrics, and Mermaid charts, plus `cp3-k6-summary.json` with the raw k6 summary.
+The script runs 50 virtual users for three minutes. k6 enforces p95 < 200 ms, p99 < 500 ms, and HTTP errors < 1%. Each run generates `cp3-k6-report.md` with throughput by 10-second interval, latency/error metrics, and Mermaid charts, plus `cp3-k6-summary.json` with the raw k6 summary.
 
-The checked-in local benchmark results are from the earlier CP3 baseline, not this updated `main` code. Re-run the benchmark against this branch before claiming its performance results; include the measured summary and deployment details in the final submission.
+The checked-in benchmark report and summary are from the current write workload, with separate stock rows assigned to all 50 VUs and an RPS chart in 10-second intervals. The measured run exceeded the p95 and p99 latency targets; see `cp3-k6-report.md` before making performance claims.
