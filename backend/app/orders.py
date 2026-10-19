@@ -198,11 +198,51 @@ def list_orders(
     try:
         with _connection() as connection:
             rows = connection.execute(
-                """SELECT id FROM orders WHERE customer_id = %s
-                   ORDER BY created_at DESC, id DESC LIMIT %s OFFSET %s""",
+                """WITH page AS (
+                       SELECT id, customer_id, restaurant_id, status, subtotal_satang,
+                              delivery_fee, total_satang, created_at
+                       FROM orders
+                       WHERE customer_id = %s
+                       ORDER BY created_at DESC, id DESC
+                       LIMIT %s OFFSET %s
+                   )
+                   SELECT page.id, page.customer_id, page.restaurant_id, page.status,
+                          page.subtotal_satang, page.delivery_fee, page.total_satang, page.created_at,
+                          i.product_id AS item_product_id, i.product_name,
+                          i.quantity AS item_quantity, i.unit_price_satang,
+                          i.line_total_satang
+                   FROM page
+                   LEFT JOIN order_items AS i ON i.order_id = page.id
+                   ORDER BY page.created_at DESC, page.id DESC, i.product_id""",
                 (x_user_id, limit, offset),
             ).fetchall()
-            return {"items": [_order(connection, row["id"], x_user_id) for row in rows], "limit": limit, "offset": offset}
+            orders: dict[UUID, dict] = {}
+            for row in rows:
+                order = orders.get(row["id"])
+                if order is None:
+                    order = {
+                        "id": str(row["id"]),
+                        "customer_id": str(row["customer_id"]),
+                        "restaurant_id": str(row["restaurant_id"]),
+                        "status": row["status"],
+                        "subtotal_satang": row["subtotal_satang"],
+                        "delivery_fee_satang": int(row["delivery_fee"] * 100),
+                        "total_satang": row["total_satang"],
+                        "created_at": row["created_at"].isoformat(),
+                        "items": [],
+                    }
+                    orders[row["id"]] = order
+                if row["item_product_id"] is not None:
+                    order["items"].append(
+                        {
+                            "product_id": str(row["item_product_id"]),
+                            "product_name": row["product_name"],
+                            "quantity": row["item_quantity"],
+                            "unit_price_satang": row["unit_price_satang"],
+                            "line_total_satang": row["line_total_satang"],
+                        }
+                    )
+            return {"items": list(orders.values()), "limit": limit, "offset": offset}
     except psycopg.Error as error:
         raise ApiError(503, "DATABASE_UNAVAILABLE", "Order database is unavailable") from error
 
