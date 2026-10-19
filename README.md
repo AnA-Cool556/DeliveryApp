@@ -136,3 +136,36 @@ docker compose exec -T api python -m scripts.verify_backfill
 - **CP1 Submission**: `python tools/package_cp1.py` -> `dist/DeliveryApp_CP1_submission.zip`
 - **CP2 Submission**: `python tools/package_cp2.py` -> `dist/DeliveryApp_CP2_submission.zip`
 
+## Checkpoint 3: concurrency and performance audit
+
+Order creation protects shared inventory with PostgreSQL row locks (`SELECT ... FOR UPDATE`) inside the order transaction. Stock is checked and decremented while those locks are held, so only one transaction can purchase the final unit. Order cancellation also locks its order row before restoring stock.
+
+`GET /api/v1/orders` selects only response fields and order-item fields in one `LEFT JOIN` query. It paginates orders before joining their items and groups the returned rows in memory, avoiding per-order queries while preserving the response format.
+
+### Concurrency verification
+
+With the Compose services running and migrations applied, run the dedicated 20-request last-unit race test:
+
+```bash
+docker compose exec -T api python -m scripts.test_concurrency
+```
+
+It creates disposable test records, sends 20 simultaneous orders for one unit, and expects exactly one `201` and 19 `409` responses. It removes its records afterward.
+
+### Automated load test
+
+Prepare an active customer bearer token and an order ID owned by that customer, then run from the repository root. This PowerShell command runs k6 in Docker Desktop without installing it on the host:
+
+```powershell
+$env:API_TOKEN = "<customer bearer token>"
+$env:ORDER_ID = "<owned order UUID>"
+docker run --rm --add-host=host.docker.internal:host-gateway `
+  -e "API_URL=http://host.docker.internal:8000/api/v1/orders" `
+  -e "API_TOKEN=$env:API_TOKEN" `
+  -e "ORDER_ID=$env:ORDER_ID" `
+  -v "${PWD}:/work" -w /work grafana/k6:latest run ./k6_script.js
+```
+
+The script runs 50 virtual users for three minutes, with four order-list reads per cancellation request. k6 enforces p95 < 200 ms, p99 < 500 ms, and HTTP errors < 1%. Each run generates `cp3-k6-report.md` with throughput, latency/error metrics, and Mermaid charts, plus `cp3-k6-summary.json` with the raw k6 summary.
+
+The checked-in local benchmark results are from the earlier CP3 baseline, not this updated `main` code. Re-run the benchmark against this branch before claiming its performance results; include the measured summary and deployment details in the final submission.

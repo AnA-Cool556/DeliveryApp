@@ -90,6 +90,7 @@ def main() -> None:
         order_id = created["id"]
         status, listed = call("GET", "", customer_token)
         assert status == 200 and listed["items"][0]["id"] == order_id
+        assert listed["items"][0]["items"] == created["items"]
         status, invalid = call(
             "POST", "", customer_token,
             {"restaurant_id": restaurant_id, "items": [{"product_id": product_a, "quantity": 0}]},
